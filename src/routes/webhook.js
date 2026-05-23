@@ -47,7 +47,10 @@ function lineSignatureMiddleware(req, res, next) {
     return getLineMiddleware()(req, res, next);
   } catch (error) {
     console.error('LINE middleware config error:', error);
-    return res.status(500).send('Missing LINE_CHANNEL_SECRET');
+    return res.status(503).json({
+      error: 'Missing LINE_CHANNEL_SECRET',
+      hint: 'Render → Environment → add LINE_CHANNEL_SECRET from LINE Console → Basic settings → Channel secret',
+    });
   }
 }
 
