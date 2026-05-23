@@ -12,6 +12,7 @@ dashboard/.env.local
 node_modules/
 dashboard/node_modules/
 dashboard/.next/
+.vercel/
 dashboard/out/
 dist/
 build/
