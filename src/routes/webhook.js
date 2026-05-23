@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { lineMiddleware, replyText, SAVED_REPLY } from '../services/line.js';
+import { getLineMiddleware, replyText, SAVED_REPLY } from '../services/line.js';
 import { classifyText } from '../services/openai.js';
 import { saveEntry } from '../services/supabase.js';
 
@@ -40,6 +40,15 @@ async function handleTextMessage(event) {
   });
 
   await replyText(event.replyToken, SAVED_REPLY);
+}
+
+function lineMiddleware(req, res, next) {
+  try {
+    return getLineMiddleware()(req, res, next);
+  } catch (error) {
+    console.error('LINE middleware config error:', error);
+    return res.status(500).send('Server configuration error');
+  }
 }
 
 router.post('/', lineMiddleware, async (req, res) => {

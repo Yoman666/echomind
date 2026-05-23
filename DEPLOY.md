@@ -17,7 +17,7 @@
 2. **New +** → **Blueprint**（或 Web Service）  
 3. 連接 GitHub repo：`Yoman666/echomind`  
 4. 若用 Blueprint，會讀取根目錄 `render.yaml`  
-5. 在 Render 的 **Environment** 手動新增：
+5. **Deploy 前**先在 Render 的 **Environment** 新增（缺這些會 deploy 失敗或 webhook 無法運作）：
 
 ```
 LINE_CHANNEL_SECRET=（你的）
@@ -29,6 +29,9 @@ SUPABASE_SERVICE_ROLE_KEY=（你的）
 ```
 
 `PORT` 不用填，Render 會自動給。
+
+> **Deploy failed？** 到 Render → 你的 service → **Logs**，看紅色錯誤。  
+> 常見原因：Environment 沒填完、或 Build 失敗。填好變數後按 **Manual Deploy → Deploy latest commit**。
 
 6. Deploy 完成後，網址像：`https://echomind-api.onrender.com`  
 7. 測試：瀏覽器開 `https://你的網址/health` 應看到 `{"status":"ok"}`  

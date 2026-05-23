@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import OpenAI from 'openai';
-import { config } from '../config.js';
+import { getConfig } from '../config.js';
 import {
   CLASSIFICATION_JSON_SCHEMA,
   validateClassification,
@@ -14,7 +14,14 @@ const systemPrompt = fs.readFileSync(
   'utf8'
 );
 
-const openai = new OpenAI({ apiKey: config.openai.apiKey });
+let openai;
+
+function ensureOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({ apiKey: getConfig().openai.apiKey });
+  }
+  return openai;
+}
 
 /**
  * @typedef {'INVALID_INPUT' | 'API_ERROR' | 'PARSE_ERROR' | 'VALIDATION_ERROR'} ClassificationErrorCode
@@ -53,7 +60,8 @@ function parseJsonContent(content) {
 }
 
 async function requestClassification(text) {
-  const response = await openai.chat.completions.create({
+  const config = getConfig();
+  const response = await ensureOpenAI().chat.completions.create({
     model: config.openai.model,
     temperature: 0.2,
     response_format: {

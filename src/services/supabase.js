@@ -1,18 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
 import ws from 'ws';
-import { config } from '../config.js';
+import { getConfig } from '../config.js';
 import { validateClassification } from '../lib/classification.js';
 
-const supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey, {
-  realtime: { transport: ws },
-});
+let supabase;
+
+function ensureSupabase() {
+  if (!supabase) {
+    const config = getConfig();
+    supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey, {
+      realtime: { transport: ws },
+    });
+  }
+  return supabase;
+}
 
 export { validateClassification };
 
 export async function saveEntry({ lineUserId, classification }) {
   const validated = validateClassification(classification);
+  const client = ensureSupabase();
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('records')
     .insert({
       user_id: lineUserId,

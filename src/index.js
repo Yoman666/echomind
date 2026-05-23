@@ -1,5 +1,5 @@
 import express from 'express';
-import { config } from './config.js';
+import { getPort } from './config.js';
 import webhookRouter from './routes/webhook.js';
 
 const app = express();
@@ -29,6 +29,21 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(config.port, () => {
-  console.log(`Server listening on port ${config.port}`);
+const port = getPort();
+
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+  const missing = [
+    'LINE_CHANNEL_SECRET',
+    'LINE_CHANNEL_ACCESS_TOKEN',
+    'OPENAI_API_KEY',
+    'SUPABASE_URL',
+    'SUPABASE_SERVICE_ROLE_KEY',
+  ].filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    console.warn(
+      `[warn] Missing env vars (webhook will fail until set): ${missing.join(', ')}`
+    );
+  }
 });
