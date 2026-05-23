@@ -12,7 +12,7 @@ app.get('/', (_req, res) => {
       health: 'GET /health',
       webhook: 'POST /webhook (LINE must use this path)',
     },
-    lineWebhookUrl: 'https://YOUR-NGROK-URL/webhook',
+    lineWebhookUrl: 'https://YOUR-RENDER-URL.onrender.com/webhook',
   });
 });
 

@@ -14,6 +14,8 @@ LINE 生活紀錄 bot：訊息分類 → Supabase → Web Dashboard。
 
 **上傳 GitHub 前請先讀 [GITHUB.md](./GITHUB.md)**（哪些檔案絕對不能 push）。
 
+**已取得 GitHub？要對外網址請讀 [DEPLOY.md](./DEPLOY.md)**（Render 後端 + Vercel Dashboard）。
+
 ## 指令
 
 ```bash
