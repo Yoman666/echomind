@@ -2,12 +2,24 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-function requireEnv(name) {
-  const value = process.env[name];
+function env(name) {
+  const value = process.env[name]?.trim();
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
+}
+
+export function getPort() {
+  return Number(process.env.PORT) || 3000;
+}
+
+export function getLineChannelSecret() {
+  return env('LINE_CHANNEL_SECRET');
+}
+
+export function getLineChannelAccessToken() {
+  return env('LINE_CHANNEL_ACCESS_TOKEN');
 }
 
 let cachedConfig = null;
@@ -18,24 +30,20 @@ export function getConfig() {
   }
 
   cachedConfig = {
-    port: Number(process.env.PORT) || 3000,
+    port: getPort(),
     line: {
-      channelSecret: requireEnv('LINE_CHANNEL_SECRET'),
-      channelAccessToken: requireEnv('LINE_CHANNEL_ACCESS_TOKEN'),
+      channelSecret: getLineChannelSecret(),
+      channelAccessToken: getLineChannelAccessToken(),
     },
     openai: {
-      apiKey: requireEnv('OPENAI_API_KEY'),
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      apiKey: env('OPENAI_API_KEY'),
+      model: process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini',
     },
     supabase: {
-      url: requireEnv('SUPABASE_URL'),
-      serviceRoleKey: requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
+      url: env('SUPABASE_URL'),
+      serviceRoleKey: env('SUPABASE_SERVICE_ROLE_KEY'),
     },
   };
 
   return cachedConfig;
-}
-
-export function getPort() {
-  return Number(process.env.PORT) || 3000;
 }

@@ -42,40 +42,67 @@ async function handleTextMessage(event) {
   await replyText(event.replyToken, SAVED_REPLY);
 }
 
-function lineMiddleware(req, res, next) {
+function lineSignatureMiddleware(req, res, next) {
   try {
     return getLineMiddleware()(req, res, next);
   } catch (error) {
     console.error('LINE middleware config error:', error);
-    return res.status(500).send('Server configuration error');
+    return res.status(500).send('Missing LINE_CHANNEL_SECRET');
   }
 }
 
-router.post('/', lineMiddleware, async (req, res) => {
-  const events = req.body.events ?? [];
-  console.log(`[webhook] received ${events.length} event(s)`);
+router.post('/', lineSignatureMiddleware, async (req, res) => {
+  try {
+    const events = req.body.events ?? [];
+    console.log(`[webhook] received ${events.length} event(s)`);
 
-  await Promise.all(
-    events.map(async (event) => {
-      if (event.type !== 'message' || event.message.type !== 'text') {
-        return;
-      }
-
-      try {
-        console.log('[webhook] text message:', event.message?.text);
-        await handleTextMessage(event);
-        console.log('[webhook] saved successfully');
-      } catch (error) {
-        console.error('Webhook handler error:', error);
-
-        if (event.replyToken) {
-          await replyText(event.replyToken, lineErrorMessage(error));
+    await Promise.all(
+      events.map(async (event) => {
+        if (event.type !== 'message' || event.message.type !== 'text') {
+          return;
         }
-      }
-    })
-  );
 
-  res.status(200).send('OK');
+        try {
+          console.log('[webhook] text message:', event.message?.text);
+          await handleTextMessage(event);
+          console.log('[webhook] saved successfully');
+        } catch (error) {
+          console.error('Webhook handler error:', error);
+
+          if (event.replyToken) {
+            await replyText(event.replyToken, lineErrorMessage(error));
+          }
+        }
+      })
+    );
+
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Webhook route error:', error);
+    if (!res.headersSent) {
+      res.status(500).send('Webhook handler failed');
+    }
+  }
+});
+
+router.use((err, req, res, _next) => {
+  console.error('LINE signature / webhook error:', err?.message || err);
+
+  if (!res.headersSent) {
+    const isSignature =
+      err?.message?.includes('signature') ||
+      err?.status === 401 ||
+      err?.statusCode === 401;
+
+    if (isSignature) {
+      res
+        .status(401)
+        .send('Invalid LINE signature — check LINE_CHANNEL_SECRET on Render');
+      return;
+    }
+
+    res.status(500).send('Internal webhook error');
+  }
 });
 
 export default router;

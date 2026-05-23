@@ -1,31 +1,35 @@
 import { middleware, Client } from '@line/bot-sdk';
-import { getConfig } from '../config.js';
+import { getLineChannelAccessToken, getLineChannelSecret } from '../config.js';
 
 let lineMiddleware;
 let lineClient;
 
-function ensureLine() {
+function ensureLineMiddleware() {
   if (!lineMiddleware) {
-    const config = getConfig();
     lineMiddleware = middleware({
-      channelSecret: config.line.channelSecret,
-    });
-    lineClient = new Client({
-      channelAccessToken: config.line.channelAccessToken,
+      channelSecret: getLineChannelSecret(),
     });
   }
+  return lineMiddleware;
+}
+
+function ensureLineClient() {
+  if (!lineClient) {
+    lineClient = new Client({
+      channelAccessToken: getLineChannelAccessToken(),
+    });
+  }
+  return lineClient;
 }
 
 export function getLineMiddleware() {
-  ensureLine();
-  return lineMiddleware;
+  return ensureLineMiddleware();
 }
 
 export const SAVED_REPLY = 'saved successfully';
 
 export async function replyText(replyToken, text) {
-  ensureLine();
-  await lineClient.replyMessage(replyToken, {
+  await ensureLineClient().replyMessage(replyToken, {
     type: 'text',
     text,
   });
