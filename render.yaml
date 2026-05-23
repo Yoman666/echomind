@@ -4,7 +4,6 @@ services:
     name: echomind-api
     runtime: node
     plan: free
-    region: singapore
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /health
